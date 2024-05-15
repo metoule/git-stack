@@ -47,6 +47,37 @@ function create() {
 }
 
 # -----------------------------------------------------------------------
+# Function to submit a stack
+# -----------------------------------------------------------------------
+function usage_submit() {
+    echo "Usage: $0 submit"
+}
+
+function submit() {
+    local OPTARG
+    while getopts ":" opt; do
+        case $opt in
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                usage_submit
+                return 1
+                ;;
+            :)
+                echo "Option -$OPTARG requires an argument." >&2
+                usage_submit
+                return 1
+                ;;
+        esac
+    done
+
+    echo "Pushing branch to remote"
+    git push origin $(git branch --show-current)
+
+    echo "Creating pull request"
+    gh pr create --fill -w
+}
+
+# -----------------------------------------------------------------------
 # Check the prerequisites to ensure the script will run properly
 # -----------------------------------------------------------------------
 function check_prerequisites() {
@@ -87,6 +118,10 @@ case "$1" in
     create)
         shift
         create "$@"
+        ;;
+    submit)
+        shift
+        submit "$@"
         ;;
     *)
         usage
