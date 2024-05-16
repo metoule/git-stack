@@ -37,11 +37,8 @@ function create() {
     # replace spaces and special characters with underscores; lowercase
     local branch=$(echo $msg | sed 's/[^a-zA-Z0-9]/_/g' | tr -dc '[:alnum:]_' | tr '[:upper:]' '[:lower:]')
 
-    # prefix with the current date format YYYY-MM-DD
-    branch=$(date +%Y-%m-%d)_$branch
-
-    # prefix with the branch prefix
-    branch="${GIT_BRANCH_PREFIX}$(date +%Y%m%d)_${branch}"
+    # prefix with the branch prefix and append the date
+    branch="${GIT_BRANCH_PREFIX}$(date +%Y-%m-%d)_${branch}"
     
     echo "Creating git branch $branch"
     git checkout -b $branch
