@@ -37,7 +37,11 @@ function create() {
     # replace spaces and special characters with underscores; lowercase
     local branch=$(echo $msg | sed 's/[^a-zA-Z0-9]/_/g' | tr -dc '[:alnum:]_' | tr '[:upper:]' '[:lower:]')
 
-    branch="${GIT_STACK_PREFIX}${branch}"
+    # prefix with the current date format YYYY-MM-DD
+    branch=$(date +%Y-%m-%d)_$branch
+
+    # prefix with the branch prefix
+    branch="${GIT_BRANCH_PREFIX}$(date +%Y%m%d)_${branch}"
     
     echo "Creating git branch $branch"
     git checkout -b $branch
@@ -71,7 +75,7 @@ function submit() {
     done
 
     echo "Pushing branch to remote"
-    git push origin $(git branch --show-current)
+    git push -u origin $(git branch --show-current)
 
     echo "Creating pull request"
     gh pr create --fill -w
@@ -81,9 +85,9 @@ function submit() {
 # Check the prerequisites to ensure the script will run properly
 # -----------------------------------------------------------------------
 function check_prerequisites() {
-    # check for environment variable name GIT_STACK_PREFIX
-    if [ -z "$GIT_STACK_PREFIX" ]; then
-        echo "GIT_STACK_PREFIX is not set. Set it to your branches prefix (e.g. yourname/)"
+    # check for environment variable name GIT_BRANCH_PREFIX
+    if [ -z "$GIT_BRANCH_PREFIX" ]; then
+        echo "GIT_BRANCH_PREFIX is not set. Set it to your branches prefix (e.g. yourname/)"
         return 1
     fi
 
