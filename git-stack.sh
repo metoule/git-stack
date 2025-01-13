@@ -114,7 +114,7 @@ function check_prerequisites() {
         echo "GihHub CLI is not installed. See https://github.com/cli/cli#installation"
         return 1
     fi
-
+    
     if ! gh auth status &>/dev/null; then
         echo "GitHub CLI is not authenticated. Please run 'gh auth login' to authenticate."
         return 1
