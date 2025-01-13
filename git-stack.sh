@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MAX_BRANCH_LENGTH=80
+
 # -----------------------------------------------------------------------
 # Function to create a new stack
 # -----------------------------------------------------------------------
@@ -113,6 +115,11 @@ function check_prerequisites() {
         return 1
     fi
 
+    if ! gh auth status &>/dev/null; then
+        echo "GitHub CLI is not authenticated. Please run 'gh auth login' to authenticate."
+        return 1
+    fi
+
     return 0
 }
 
@@ -175,6 +182,8 @@ function usage() {
     echo "Usage: $0 <command> [options]"
     echo "Commands:"
     echo "  create"
+    echo "  submit"
+    echo "  sync"
 }
 
 case "$1" in
@@ -185,6 +194,10 @@ case "$1" in
     submit)
         shift
         submit "$@"
+        ;;
+    sync)
+        shift
+        sync "$@"
         ;;
     *)
         usage
