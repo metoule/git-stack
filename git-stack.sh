@@ -1,7 +1,5 @@
 #!/bin/bash
 
-MAX_BRANCH_LENGTH=80
-
 # -----------------------------------------------------------------------
 # Function to create a new stack
 # -----------------------------------------------------------------------
@@ -114,11 +112,6 @@ function check_prerequisites() {
         echo "GihHub CLI is not installed. See https://github.com/cli/cli#installation"
         return 1
     fi
-    
-    if ! gh auth status &>/dev/null; then
-        echo "GitHub CLI is not authenticated. Please run 'gh auth login' to authenticate."
-        return 1
-    fi
 
     return 0
 }
@@ -149,10 +142,12 @@ function sync() {
     echo "Fetching latest changes from remote"
     git fetch --all
 
+    main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+
     echo "Checking for closed PRs and removing corresponding local branches"
     for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
         # Skip master branch
-        if [[ "$branch" == "master" ]]; then
+        if [[ "$branch" == "$main_branch" ]]; then
             continue
         fi
 
@@ -160,8 +155,8 @@ function sync() {
         pr_state=$(gh pr view "$branch" --json state -q .state 2>/dev/null)
         if [[ "$pr_state" == "CLOSED" || "$pr_state" == "MERGED" ]]; then
             if [[ "$branch" == "$(git rev-parse --abbrev-ref HEAD)" ]]; then
-                echo "Current branch $branch has a closed PR. Switching to master."
-                git checkout master
+                echo "Current branch $branch has a closed PR. Switching to $main_branch."
+                git checkout $main_branch
             fi
 
             echo "Removing local branch $branch (PR is closed)"
@@ -180,8 +175,6 @@ function usage() {
     echo "Usage: $0 <command> [options]"
     echo "Commands:"
     echo "  create"
-    echo "  submit"
-    echo "  sync"
 }
 
 case "$1" in
@@ -192,10 +185,6 @@ case "$1" in
     submit)
         shift
         submit "$@"
-        ;;
-    sync)
-        shift
-        sync "$@"
         ;;
     *)
         usage
