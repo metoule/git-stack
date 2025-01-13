@@ -149,10 +149,12 @@ function sync() {
     echo "Fetching latest changes from remote"
     git fetch --all
 
+    main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+
     echo "Checking for closed PRs and removing corresponding local branches"
     for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
         # Skip master branch
-        if [[ "$branch" == "master" ]]; then
+        if [[ "$branch" == "$main_branch" ]]; then
             continue
         fi
 
@@ -160,8 +162,8 @@ function sync() {
         pr_state=$(gh pr view "$branch" --json state -q .state 2>/dev/null)
         if [[ "$pr_state" == "CLOSED" || "$pr_state" == "MERGED" ]]; then
             if [[ "$branch" == "$(git rev-parse --abbrev-ref HEAD)" ]]; then
-                echo "Current branch $branch has a closed PR. Switching to master."
-                git checkout master
+                echo "Current branch $branch has a closed PR. Switching to $main_branch."
+                git checkout $main_branch
             fi
 
             echo "Removing local branch $branch (PR is closed)"
