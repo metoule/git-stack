@@ -172,15 +172,6 @@ function sync() {
     echo "Sync complete"
 }
 
-# Update the usage function to include the new sync command
-function usage() {
-    echo "Usage: $0 <command> [options]"
-    echo "Commands:"
-    echo "  create"
-    echo "  submit"
-    echo "  sync"
-}
-
 # -----------------------------------------------------------------------
 # Parse the command and delegate to the appropriate function
 # -----------------------------------------------------------------------
@@ -189,6 +180,8 @@ function usage() {
     echo "Usage: $0 <command> [options]"
     echo "Commands:"
     echo "  create"
+    echo "  submit"
+    echo "  sync"
 }
 
 case "$1" in
