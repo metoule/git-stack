@@ -33,13 +33,28 @@ function create() {
         usage_create
         return 1
     fi
-
-    # replace spaces and special characters with underscores; lowercase
-    local branch=$(echo $msg | sed 's/[^a-zA-Z0-9]/_/g' | tr -dc '[:alnum:]_' | tr '[:upper:]' '[:lower:]')
-
-    # prefix with the branch prefix and append the date
-    branch="${GIT_BRANCH_PREFIX}$(date +%Y-%m-%d)_${branch}"
     
+    # replace all non-alphanumeric characters with an underscore
+    # convert to lowercase
+    # remove leading and trailing underscores
+    local branch=$(echo $msg \
+        | sed 's/[^a-zA-Z0-9]/_/g' \
+        | tr '[:upper:]' '[:lower:]' \
+        | sed 's/^_*//' \
+        | sed 's/_$//' \
+    )
+    
+    # prefix with the branch prefix and append the date
+    branch="${GIT_BRANCH_PREFIX}$(date +%Y%m%d)_${branch}"
+
+    # if branch is longer than maximum length in characters, truncate it with a 8 character MD5 hash
+    if [ ${#branch} -gt $MAX_BRANCH_LENGTH ]; then
+        branch="${branch:0:$MAX_BRANCH_LENGTH}_$(echo $msg | md5sum | cut -c1-8)"
+    fi
+
+    # replace multiple underscores with a single underscore
+    branch=$(echo $branch | tr -s '_')
+       
     echo "Creating git branch $branch"
     git checkout -b $branch
 
