@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MAX_BRANCH_LENGTH=80
+
 # -----------------------------------------------------------------------
 # Function to create a new stack
 # -----------------------------------------------------------------------
@@ -112,6 +114,11 @@ function check_prerequisites() {
         echo "GihHub CLI is not installed. See https://github.com/cli/cli#installation"
         return 1
     fi
+    
+    if ! gh auth status &>/dev/null; then
+        echo "GitHub CLI is not authenticated. Please run 'gh auth login' to authenticate."
+        return 1
+    fi
 
     return 0
 }
@@ -119,6 +126,60 @@ function check_prerequisites() {
 if ! check_prerequisites; then
     exit 1
 fi
+
+# -----------------------------------------------------------------------
+# Function to sync and close branches with closed PRs
+# -----------------------------------------------------------------------
+function usage_sync() {
+    echo "Usage: $0 sync"
+}
+
+function sync() {
+    local OPTARG
+    while getopts ":" opt; do
+        case $opt in
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                usage_sync
+                return 1
+                ;;
+        esac
+    done
+
+    echo "Fetching latest changes from remote"
+    git fetch --all
+
+    echo "Checking for closed PRs and removing corresponding local branches"
+    for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
+        # Skip master branch
+        if [[ "$branch" == "master" ]]; then
+            continue
+        fi
+
+        # Check if the branch has a closed PR
+        pr_state=$(gh pr view "$branch" --json state -q .state 2>/dev/null)
+        if [[ "$pr_state" == "CLOSED" || "$pr_state" == "MERGED" ]]; then
+            if [[ "$branch" == "$(git rev-parse --abbrev-ref HEAD)" ]]; then
+                echo "Current branch $branch has a closed PR. Switching to master."
+                git checkout master
+            fi
+
+            echo "Removing local branch $branch (PR is closed)"
+            git branch -D "$branch"
+        fi
+    done
+
+    echo "Sync complete"
+}
+
+# Update the usage function to include the new sync command
+function usage() {
+    echo "Usage: $0 <command> [options]"
+    echo "Commands:"
+    echo "  create"
+    echo "  submit"
+    echo "  sync"
+}
 
 # -----------------------------------------------------------------------
 # Parse the command and delegate to the appropriate function
@@ -138,6 +199,10 @@ case "$1" in
     submit)
         shift
         submit "$@"
+        ;;
+    sync)
+        shift
+        sync "$@"
         ;;
     *)
         usage
