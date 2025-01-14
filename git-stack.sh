@@ -165,7 +165,7 @@ function sync() {
         if [[ "$pr_state" == "CLOSED" || "$pr_state" == "MERGED" ]]; then
             if [[ "$branch" == "$(git rev-parse --abbrev-ref HEAD)" ]]; then
                 echo "Current branch $branch has a closed PR. Switching to $main_branch."
-                git checkout $main_branch
+                git checkout -q $main_branch
             fi
 
             echo "Removing local branch $branch (PR is closed)"
