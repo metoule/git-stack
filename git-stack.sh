@@ -58,10 +58,10 @@ function create() {
     branch=$(echo $branch | tr -s '_')
        
     echo "Creating git branch $branch"
-    git checkout -b $branch
+    git checkout -q -b $branch
 
     echo "Adding all files and committing changes"
-    git add . && git commit -m "$msg"
+    git add . && git commit -q -m "$msg"
 }
 
 # -----------------------------------------------------------------------
@@ -89,7 +89,7 @@ function submit() {
     done
 
     echo "Pushing branch to remote"
-    git push -u origin $(git branch --show-current)
+    git push -q -u origin $(git branch --show-current)
 
     echo "Creating pull request"
     gh pr create --fill -w
@@ -147,7 +147,7 @@ function sync() {
     done
 
     echo "Fetching latest changes from remote"
-    git fetch --all
+    git fetch -q --all
 
     main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
 
@@ -167,7 +167,7 @@ function sync() {
             fi
 
             echo "Removing local branch $branch (PR is closed)"
-            git branch -D "$branch"
+            git branch -q -D "$branch"
         fi
     done
 
