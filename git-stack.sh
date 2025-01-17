@@ -43,6 +43,7 @@ function create() {
     # remove leading and trailing underscores
     local branch=$(echo $msg \
         | sed 's/[^a-zA-Z0-9]/_/g' \
+        | tr -dc '[:alnum:]_' \
         | tr '[:upper:]' '[:lower:]' \
         | sed 's/^_*//' \
         | sed 's/_$//' \
