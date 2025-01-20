@@ -174,6 +174,9 @@ function sync() {
         fi
     done
 
+    echo "Pulling latest changes from remote"
+    git pull -q
+
     echo "Sync complete"
 }
 
