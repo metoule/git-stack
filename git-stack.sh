@@ -162,14 +162,19 @@ function sync() {
         fi
 
         # Check if the branch has a closed PR
-        pr_state=$(gh pr view "$branch" --json state -q .state 2>/dev/null)
+        pr_info=$(gh pr view "$branch" --json state,url -q '{state: .state, url: .url}' 2>/dev/null || echo '{"state":"LOCAL"}')
+        pr_state=$(echo $pr_info | jq -r '.state')
+        pr_url=$(echo $pr_info | jq -r '.url // ""')
+        
         if [[ "$pr_state" == "CLOSED" || "$pr_state" == "MERGED" ]]; then
+            echo "  $branch [$pr_state] $pr_url"
+            
             if [[ "$branch" == "$(git rev-parse --abbrev-ref HEAD)" ]]; then
-                echo "Current branch $branch has a closed PR. Switching to $main_branch."
+                echo "    -> Closed PR: switching to $main_branch."
                 git checkout -q $main_branch
             fi
 
-            echo "Removing local branch $branch (PR is closed)"
+            echo "    -> Closed PR: removing local branch"
             git branch -q -D "$branch"
         fi
     done
