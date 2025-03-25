@@ -150,7 +150,7 @@ function sync() {
     done
 
     echo "Fetching latest changes from remote"
-    git fetch -q --all
+    git fetch -q --all --prune
 
     main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
 
@@ -180,7 +180,7 @@ function sync() {
     done
 
     echo "Pulling latest changes from remote"
-    git pull -q
+    git pull -q --prune
 
     echo "Sync complete"
 }
