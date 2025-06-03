@@ -2,7 +2,7 @@
 
 set -e
 
-MAX_BRANCH_LENGTH=80
+MAX_BRANCH_LENGTH=50
 
 # -----------------------------------------------------------------------
 # Function to create a new stack
