@@ -2,7 +2,7 @@
 
 set -e
 
-MAX_BRANCH_LENGTH=50
+MAX_BRANCH_LENGTH=60
 
 # -----------------------------------------------------------------------
 # Function to create a new stack
@@ -52,13 +52,13 @@ function create() {
     # prefix with the branch prefix and append the date
     branch="${GIT_BRANCH_PREFIX}$(date +%Y%m%d)_${branch}"
 
-    # if branch is longer than maximum length in characters, truncate it with a 8 character MD5 hash
-    if [ ${#branch} -gt $MAX_BRANCH_LENGTH ]; then
-        branch="${branch:0:$MAX_BRANCH_LENGTH}_$(echo $msg | md5sum | cut -c1-8)"
-    fi
-
     # replace multiple underscores with a single underscore
     branch=$(echo $branch | tr -s '_')
+
+    # if branch is longer than maximum length in characters, truncate it with a 8 character MD5 hash
+    if [ ${#branch} -gt $MAX_BRANCH_LENGTH ]; then
+        branch="${branch:0:$((MAX_BRANCH_LENGTH - 9))}_$(echo $msg | md5sum | cut -c1-8)"
+    fi
        
     echo "Creating git branch $branch"
     git checkout -q -b $branch
